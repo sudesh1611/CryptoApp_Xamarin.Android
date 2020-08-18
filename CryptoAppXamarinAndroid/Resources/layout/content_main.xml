@@ -7,11 +7,18 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_main">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:text="Hello World!" />
+    <EditText
+        android:id="@+id/newNoteEditText"
+        android:layout_marginTop="15sp"
+        android:layout_marginBottom="15sp"
+        android:layout_marginLeft="10sp"
+        android:layout_marginRight="10sp"
+        android:layout_width="match_parent"
+        android:gravity="top | left"
+        android:inputType="textMultiLine | textNoSuggestions | text"
+        android:hint="Write/Paste text here..."
+        android:background="@drawable/editText_rounded"
+        android:layout_height="match_parent"/>
     
 
 </RelativeLayout>

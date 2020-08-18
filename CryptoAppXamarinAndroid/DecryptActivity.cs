@@ -66,8 +66,14 @@ namespace CryptoAppXamarinAndroid
             diag.Show();
         }
 
-        private void OpenFileButton_Click(object sender, EventArgs e)
+        private async void OpenFileButton_Click(object sender, EventArgs e)
         {
+            var PermissionStatus = await CheckAndRequestStoragePermission();
+            if (PermissionStatus != PermissionStatus.Granted)
+            {
+                ShowDialog("Permission Error", "Storage permission is required to encrypt files.");
+                return;
+            }
             try
             {
                 if (!String.IsNullOrEmpty(TextInputEditor.Text))
@@ -248,13 +254,13 @@ namespace CryptoAppXamarinAndroid
                 });
                 if (decryptionResult.Result)
                 {
-                    fileData = null;
                     RestoreAllControls(ViewStates.Invisible);
+                    ShowDialog("Success", "File decrypted. Decrypted filename is \"" + decryptionResult.DecryptedString + "\" and stored at \"" + System.IO.Path.GetDirectoryName(fileData) + "\" folder.");
+                    fileData = null;
                     RemoveButton_Click(null, null);
                     TextInputEditor.Text = String.Empty;
                     CustomPasswordEntry.Text = String.Empty;
                     PasswordSwitch.Checked = true;
-                    ShowDialog("Success", "File decrypted. Decrypted filename is \"" + decryptionResult.DecryptedString + "\" and stored at \"" + System.IO.Path.GetDirectoryName(fileData) + "\" folder.");
                 }
                 else if (decryptionResult.Result == false && decryptionResult.Error == "Password")
                 {
@@ -436,6 +442,16 @@ namespace CryptoAppXamarinAndroid
             return "com.google.android.apps.photos.content".Equals(uri.Authority);
         }
 
+
+        public async Task<PermissionStatus> CheckAndRequestStoragePermission()
+        {
+            var status = await Permissions.CheckStatusAsync<Permissions.StorageWrite>();
+            if (status != PermissionStatus.Granted)
+            {
+                status = await Permissions.RequestAsync<Permissions.StorageWrite>();
+            }
+            return status;
+        }
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {

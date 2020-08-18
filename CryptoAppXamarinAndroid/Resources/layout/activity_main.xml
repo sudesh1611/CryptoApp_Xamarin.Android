@@ -45,16 +45,6 @@
                     android:layout_height="wrap_content"/>
 
         <Button
-            android:id="@+id/MessageActivityButton"
-            android:layout_marginBottom="25dp"
-                    android:text="Messages"
-                    android:background="@drawable/btn_rounded"
-                    android:textColor="#FFFFFF"
-                    android:textSize="15sp"
-                    android:layout_width="210dp"
-                    android:layout_height="wrap_content"/>
-
-        <Button
             android:id="@+id/NotesActivityButton"
             android:layout_marginBottom="25dp"
                     android:text="Notes"

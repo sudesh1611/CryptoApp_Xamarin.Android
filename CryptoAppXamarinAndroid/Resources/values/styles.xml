@@ -26,4 +26,9 @@
     <item name="colorAccent">#96d1ff</item>
   </style>
 
+
+    <style name="MainTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="MainTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
 </resources>
