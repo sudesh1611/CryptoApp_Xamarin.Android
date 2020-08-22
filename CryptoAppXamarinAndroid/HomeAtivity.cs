@@ -41,7 +41,8 @@ namespace CryptoAppXamarinAndroid
 
         private void NotesActivityButton_Click(object sender, EventArgs e)
         {
-            StartActivity(new Android.Content.Intent(this, typeof(NewNoteActivity)));
+            StartActivity(new Android.Content.Intent(this, typeof(AllNotesActivity)));
+            //StartActivity(new Android.Content.Intent(this, typeof(NewNoteActivity)));
             //View view = (View)sender;
             //Snackbar.Make(view, "Coming Soon", Snackbar.LengthLong)
             //    .SetAction("Action", (Android.Views.View.IOnClickListener)null).Show();

@@ -2,64 +2,94 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using System.Text.Json;
+using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
+using Android.Graphics;
 using Android.OS;
 using Android.Runtime;
+using Android.Systems;
 using Android.Views;
 using Android.Widget;
+using CryptoAppXamarinAndroid.MyDatabase;
+using Xamarin.Essentials;
 
 namespace CryptoAppXamarinAndroid.Services
 {
     [Service]
-    public class AddNewNoteService : Service
+    public class AddNewNoteService : IntentService
     {
-        bool isStarted;
-        public override void OnCreate()
+        static CryptoAppNotesDatabase cryptoAppNotesDatabase;
+        public static CryptoAppNotesDatabase NotesDatabase
         {
-            base.OnCreate();
-        }
-
-        [return: GeneratedEnum]
-        public override StartCommandResult OnStartCommand(Intent intent, [GeneratedEnum] StartCommandFlags flags, int startId)
-        {
-            if(isStarted)
+            get
             {
-
+                if (cryptoAppNotesDatabase == null)
+                {
+                    cryptoAppNotesDatabase = new CryptoAppNotesDatabase();
+                }
+                return cryptoAppNotesDatabase;
             }
-            else
+        }
+        public AddNewNoteService():base("AddNewNoteService")
+        {
+
+        }
+
+        protected override void OnHandleIntent(Intent intent)
+        {
+            Task.Run(async () =>
             {
-                RegisterForegroundService();
-                isStarted = true;
-            }
-            return StartCommandResult.NotSticky;
-        }
-
-        PendingIntent BuildIntentToShowMainActivity()
-        {
-            var notificationIntent = new Intent(this, typeof(HomeAtivity));
-            notificationIntent.SetFlags(ActivityFlags.SingleTop | ActivityFlags.ClearTask);
-            var pendingIntent = PendingIntent.GetActivity(this, 0, notificationIntent, PendingIntentFlags.UpdateCurrent);
-            return pendingIntent;
-        }
-
-        void RegisterForegroundService()
-        {
-            var notification = new Notification.Builder(this)
-                .SetContentTitle(Resources.GetString(Resource.String.app_name))
-                .SetContentText("Saving New Note")
-                .SetSmallIcon(Resource.Drawable.ic_launcher)
-                .SetContentIntent(BuildIntentToShowMainActivity())
-                .SetOngoing(true)
-                .Build();
-
-            StartForeground(45, notification);
-        }
-
-        public override IBinder OnBind(Intent intent)
-        {
-            return null;
+                try
+                {
+                    string noteType = intent.GetStringExtra(GlobalConstants.NOTE_TYPE);
+                    string noteContent = intent.GetStringExtra(GlobalConstants.NOTE_CONTENT);
+                    string noteCreated = intent.GetStringExtra(GlobalConstants.NOTE_CREATION_DATE);
+                    string noteTitle = intent.GetStringExtra(GlobalConstants.NOTE_TITLE);
+                    if (!String.IsNullOrEmpty(noteType) && !String.IsNullOrEmpty(noteContent))
+                    {
+                        if (String.IsNullOrEmpty(noteCreated))
+                        {
+                            noteCreated = JsonSerializer.Serialize(DateTime.Now);
+                        }
+                        if (noteTitle == null)
+                        {
+                            noteTitle = String.Empty;
+                        }
+                        string password = await SecureStorage.GetAsync("AppPassword");
+                        if (password == null)
+                        {
+                            throw new Exception("App's password missing");
+                        }
+                        EncryptionResult encryptionResult = EncryptionService.EncryptText(noteContent, password);
+                        if (encryptionResult.Result)
+                        {
+                            NoteModel newNote = new NoteModel()
+                            {
+                                NoteContent = encryptionResult.EncryptedString,
+                                NoteTitle = noteTitle,
+                                NoteCreationTime = JsonSerializer.Deserialize<DateTime>(noteCreated),
+                                NoteType = noteType,
+                                NoteLastModifiedTime = JsonSerializer.Deserialize<DateTime>(noteCreated),
+                                LastEncrypted = DateTime.Now
+                            };
+                            await NotesDatabase.SaveOrUpdateNode(newNote);
+                        }
+                        else
+                        {
+                            throw new Exception(encryptionResult.Error);
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        Toast.MakeText(Android.App.Application.Context, "Note could not be saved", ToastLength.Long).Show();
+                    });
+                }
+            });
         }
     }
 }

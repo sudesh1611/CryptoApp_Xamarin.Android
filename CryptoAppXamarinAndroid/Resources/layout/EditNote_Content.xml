@@ -5,11 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:showIn="@layout/activity_main">
+    tools:showIn="@layout/EditNote">
 
     <EditText
         android:layout_alignParentTop="true"
-        android:id="@+id/newNoteEditText"
+        android:id="@+id/editNoteEditText"
         android:layout_marginTop="15sp"
         android:layout_marginBottom="30sp"
         android:layout_marginLeft="10sp"
@@ -20,20 +20,21 @@
         android:hint="Write/Paste text here..."
         android:background="@drawable/editText_rounded"
         android:layout_height="match_parent"/>
+    
     <LinearLayout
         android:background="#2196F3"
         android:layout_alignParentBottom="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <TextView
+            android:id="@+id/BottomTextView"
             android:textColor="#FFFFFF"
                 android:layout_width="match_parent"
-            android:text="New Note"
+            android:text=""
             android:gravity="center_horizontal"
                 android:layout_gravity="center_horizontal"
                 android:layout_height="match_parent"/>
     
     </LinearLayout>
-    
 
 </RelativeLayout>
