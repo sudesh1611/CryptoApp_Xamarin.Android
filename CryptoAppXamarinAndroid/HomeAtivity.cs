@@ -5,6 +5,7 @@ using System.Text;
 
 using Android.App;
 using Android.Content;
+using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
 using Android.Support.Design.Widget;
@@ -14,7 +15,7 @@ using Android.Widget;
 
 namespace CryptoAppXamarinAndroid
 {
-    [Activity(Label = "Home", Theme = "@style/MainTheme")]
+    [Activity(Label = "Home", Theme = "@style/MainTheme", ScreenOrientation = ScreenOrientation.Portrait, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     public class HomeAtivity : AppCompatActivity
     {
         protected override void OnCreate(Bundle savedInstanceState)

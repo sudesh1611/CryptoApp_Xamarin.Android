@@ -165,7 +165,11 @@ namespace CryptoAppXamarinAndroid.Services
                 System.Buffer.BlockCopy(FileContentBytes, 1000, ExtensionBytes, 0, ExtensionBytesLength);
                 System.Buffer.BlockCopy(FileContentBytes, 2032, EncryptedBytes, 0, EncryptedBytes.Length);
                 byte[] DecryptedBytes = DecryptionService.GetDecryptedByteArray(EncryptedBytes, passwordBytes);
-                string CurrentDirectoryPath = System.IO.Path.GetDirectoryName(inputFile);
+                string CurrentDirectoryPath = Path.Combine(Android.OS.Environment.ExternalStorageDirectory.Path, "Crypto App");
+                if (!Directory.Exists(CurrentDirectoryPath))
+                {
+                    System.IO.Directory.CreateDirectory(CurrentDirectoryPath);
+                }
                 string CurrentFileName = System.Text.Encoding.ASCII.GetString(FileNameBytes);
                 string CurrentFileExtension = System.Text.Encoding.ASCII.GetString(ExtensionBytes);
                 string WritePath = System.IO.Path.Combine(CurrentDirectoryPath, CurrentFileName + CurrentFileExtension);
@@ -173,11 +177,10 @@ namespace CryptoAppXamarinAndroid.Services
                 {
                     Int64 ctr3 = 1;
                     var TempWritePath = System.IO.Path.Combine(CurrentDirectoryPath, CurrentFileName + "_" + ctr3.ToString() + CurrentFileExtension);
-                    while (System.IO.File.Exists(TempWritePath))
+                    while (System.IO.File.Exists(TempWritePath) && ctr3 < int.MaxValue)
                     {
                         ctr3 = ctr3 + 1;
                         TempWritePath = System.IO.Path.Combine(CurrentDirectoryPath, CurrentFileName + "_" + ctr3.ToString() + CurrentFileExtension);
-                        //If possible give max value and return error file already present
                     }
                     WritePath = TempWritePath;
                 }

@@ -122,10 +122,28 @@ namespace CryptoAppXamarinAndroid.Services
                 System.Buffer.BlockCopy(ExtensionBytes, 0, FileContentBytes, 1000, ExtensionBytesLength);
                 System.Buffer.BlockCopy(SaltedHashedPassword, 0, FileContentBytes, 2000, 32);
                 System.Buffer.BlockCopy(encryptedByteArray, 0, FileContentBytes, 2032, encryptedByteArray.Length);
-                string CryptoAppPath = Path.Combine(Android.OS.Environment.ExternalStorageDirectory.Path, "Crypto App");
-                Directory.CreateDirectory(CryptoAppPath);
-                //string WritePath = System.IO.Path.Combine(CurrentDirectoryPath, CurrentFileName + ".senc");
-                string WritePath = System.IO.Path.Combine(CryptoAppPath, CurrentFileName + ".senc");
+                var CryptoAppPath = Path.Combine(Android.OS.Environment.ExternalStorageDirectory.Path, "Crypto App");
+                if (!Directory.Exists(CryptoAppPath))
+                {
+                    System.IO.Directory.CreateDirectory(CryptoAppPath);
+                }
+                var EncryptedFilesPath = Path.Combine(CryptoAppPath, "Encrypted Files");
+                if (!Directory.Exists(EncryptedFilesPath))
+                {
+                    System.IO.Directory.CreateDirectory(EncryptedFilesPath);
+                }
+                string WritePath = System.IO.Path.Combine(EncryptedFilesPath, CurrentFileName + ".senc");
+                if (System.IO.File.Exists(WritePath))
+                {
+                    Int64 ctr3 = 1;
+                    var TempWritePath = System.IO.Path.Combine(EncryptedFilesPath, CurrentFileName + "_" + ctr3.ToString() + ".senc");
+                    while (System.IO.File.Exists(TempWritePath) && ctr3 < int.MaxValue)
+                    {
+                        ctr3 = ctr3 + 1;
+                        TempWritePath = System.IO.Path.Combine(EncryptedFilesPath, CurrentFileName + "_" + ctr3.ToString() + ".senc");
+                    }
+                    WritePath = TempWritePath;
+                }
                 File.WriteAllBytes(WritePath, FileContentBytes);
                 encryptionResult = new EncryptionResult()
                 {

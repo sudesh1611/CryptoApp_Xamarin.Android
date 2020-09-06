@@ -15,10 +15,11 @@ using System.Threading.Tasks;
 using Java.Util.Concurrent;
 using Android.App.Job;
 using Android.Content;
+using Android.Content.PM;
 
 namespace CryptoAppXamarinAndroid
 {
-    [Activity(Label = "@string/app_name", Theme = "@style/MainTheme", MainLauncher = true,NoHistory =true)]
+    [Activity(Label = "@string/app_name", Theme = "@style/MainTheme",NoHistory =true, ScreenOrientation = ScreenOrientation.Portrait, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     public class MainActivity : AppCompatActivity
     {
         Button SaveButton;
@@ -32,14 +33,11 @@ namespace CryptoAppXamarinAndroid
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             SetContentView(Resource.Layout.activity_Password);
             
-            Button button = new Button(this);
-            button.Click += Button_Click;
             SaveButton = FindViewById<Button>(Resource.Id.SaveButton);
             password = FindViewById<EditText>(Resource.Id.PasswordEntry);
             confpassword= FindViewById<EditText>(Resource.Id.ConfirmPasswordEntry);
             heading = FindViewById<TextView>(Resource.Id.PasswordHeading);
             SaveButton.Click += SaveButton_Click;
-            Button_Click(null, null);
         }
 
         private async void SaveButton_Click(object sender, EventArgs e)
@@ -102,39 +100,6 @@ namespace CryptoAppXamarinAndroid
             });
             Dialog diag = alertDiag.Create();
             diag.Show();
-        }
-
-        private async void Button_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                var CryptoAppPath = Path.Combine(Android.OS.Environment.ExternalStorageDirectory.Path, "Crypto App");
-                if (!Directory.Exists(CryptoAppPath))
-                {
-                    System.IO.Directory.CreateDirectory(CryptoAppPath);
-                }
-                var FirstRun = await SecureStorage.GetAsync("FirstRun");
-                if(FirstRun!=null)
-                {
-                    StartActivity(new Android.Content.Intent(this, typeof(HomeAtivity)));
-                }
-                else
-                {
-                    heading.Visibility = ViewStates.Visible;
-                    password.Visibility = ViewStates.Visible;
-                    confpassword.Visibility = ViewStates.Visible;
-                    SaveButton.Visibility = ViewStates.Visible;
-                }
-            }
-            catch (Exception)
-            {
-                Toast.MakeText(this, "This app can not run", ToastLength.Long).Show();
-                heading.Text = "This app can not run";
-                heading.Visibility = ViewStates.Visible;
-                password.Visibility = ViewStates.Invisible;
-                confpassword.Visibility = ViewStates.Invisible;
-                SaveButton.Visibility = ViewStates.Invisible;
-            }
         }
 
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)

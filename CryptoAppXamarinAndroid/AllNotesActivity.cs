@@ -27,6 +27,7 @@ namespace CryptoAppXamarinAndroid
         static CryptoAppNotesDatabase cryptoAppNotesDatabase;
         bool IsLoading = false;
         bool IsBusy = false;
+        IMenu MainMenu;
         public static CryptoAppNotesDatabase NotesDatabase
         {
             get
@@ -39,7 +40,6 @@ namespace CryptoAppXamarinAndroid
             }
         }
         RecyclerView mRecyclerView;
-        RecyclerView.LayoutManager mLayoutManager;
         List<NoteModel> AllNotes;
         NotesAdapter notesAdapter;
         SwipeRefreshLayout swipeContainer;
@@ -63,9 +63,47 @@ namespace CryptoAppXamarinAndroid
             mRecyclerView.SetLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.Vertical));
         }
 
+        public override bool OnCreateOptionsMenu(IMenu menu)
+        {
+            MenuInflater.Inflate(Resource.Menu.AllActivityMenu, menu);
+            MainMenu = menu;
+            return true;
+        }
+
+        public override bool OnOptionsItemSelected(IMenuItem item)
+        {
+            int id = item.ItemId;
+            if (id == Resource.Id.action_Disclaimer)
+            {
+                ShowDialog("Info", "All of the Crypto App notes will get deleted if you clear app's data or uninstall app. It is advised to export notes before uninstalling app.");
+                return true;
+            }
+            if (id == Android.Resource.Id.Home)
+            {
+                this.Finish();
+            }
+            if (id == Resource.Id.action_ExportNotes)
+            {
+                Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    var PermissionStatus = await CheckAndRequestStoragePermission();
+                    if (PermissionStatus != PermissionStatus.Granted)
+                    {
+                        ShowDialog("Permission Error", "Storage permission is required to export notes.");
+                        return;
+                    }
+                    Intent exportNotesJson = new Intent(this, typeof(ExportNoteAsJSONService));
+                    ShowDialog("Info", "Notes will be exported in JSON format to Crypto App folder");
+                    StartService(exportNotesJson);
+                });
+                return true;
+            }
+            return base.OnOptionsItemSelected(item);
+        }
+
         private void SwipeContainer_Refresh(object sender, EventArgs e)
         {
-            if(IsLoading)
+            if (IsLoading)
             {
                 return;
             }
@@ -78,18 +116,7 @@ namespace CryptoAppXamarinAndroid
         {
             base.OnResume();
             IsBusy = false;
-            FetchAndSetView(null,null);
-        }
-
-        public override bool OnOptionsItemSelected(IMenuItem item)
-        {
-            int id = item.ItemId;
-            if (id == Android.Resource.Id.Home)
-            {
-                this.Finish();
-            }
-
-            return base.OnOptionsItemSelected(item);
+            FetchAndSetView(null, null);
         }
 
         private async void FetchAndSetView(object sender, EventArgs e)
@@ -100,14 +127,14 @@ namespace CryptoAppXamarinAndroid
             }
             var TempAllNotes = await NotesDatabase.GetAllNotesList();
             AllNotes = new List<NoteModel>();
-            if(TempAllNotes!=null)
+            if (TempAllNotes != null)
             {
                 string password = await SecureStorage.GetAsync("AppPassword");
                 if (password == null)
                 {
                     return;
                 }
-                for (int i=0;i< TempAllNotes.Count;i++)
+                for (int i = 0; i < TempAllNotes.Count; i++)
                 {
                     try
                     {
@@ -120,8 +147,6 @@ namespace CryptoAppXamarinAndroid
                     }
                     catch (Exception)
                     {
-
-                        throw;
                     }
                 }
             }
@@ -140,9 +165,10 @@ namespace CryptoAppXamarinAndroid
             swipeContainer.Refreshing = false;
         }
 
+
         private void NotesAdapter_ItemClick(object sender, int position)
         {
-            if(IsBusy==false)
+            if (IsBusy == false)
             {
                 IsBusy = true;
                 Intent intent = new Intent(this, typeof(EditNoteActivity));
@@ -165,6 +191,35 @@ namespace CryptoAppXamarinAndroid
         {
             base.OnBackPressed();
         }
+
+        private void ShowDialog(string title, string messaage)
+        {
+            Android.Support.V7.App.AlertDialog.Builder alertDiag = new Android.Support.V7.App.AlertDialog.Builder(this);
+            alertDiag.SetTitle(title);
+            alertDiag.SetMessage(messaage);
+            alertDiag.SetPositiveButton("Okay", (senderAlert, args) =>
+            {
+            });
+            Dialog diag = alertDiag.Create();
+            diag.Show();
+        }
+
+        public async Task<PermissionStatus> CheckAndRequestStoragePermission()
+        {
+            var status = await Permissions.CheckStatusAsync<Permissions.StorageWrite>();
+            if (status != PermissionStatus.Granted)
+            {
+                status = await Permissions.RequestAsync<Permissions.StorageWrite>();
+            }
+            return status;
+        }
+
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
+        {
+            Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+
+            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
     }
 
     public class NoteViewHolder : RecyclerView.ViewHolder
@@ -183,6 +238,7 @@ namespace CryptoAppXamarinAndroid
     {
         // Event handler for item clicks:
         public event EventHandler<int> ItemClick;
+
 
         // Underlying data set (a photo album):
         List<NoteModel> AllnoteModels;
@@ -214,15 +270,33 @@ namespace CryptoAppXamarinAndroid
             // Set the ImageView and TextView in this ViewHolder's CardView 
             // from this position in the photo album:
             //vh.Image.SetImageResource(mPhotoAlbum[position].PhotoID);
-            if(AllnoteModels[position].NoteContent.Length > 200)
+            if (AllnoteModels[position].NoteContent.Length > 200)
             {
-                vh.NoteText.Text = AllnoteModels[position].NoteContent.Substring(0, 199);
+                var truncText = AllnoteModels[position].NoteContent.Substring(0, 199);
+                var Alllines = truncText.Split('\n');
+                if (Alllines.Length > 6)
+                {
+                    vh.NoteText.Text = new StringBuilder().AppendJoin('\n', Alllines[0..5]).ToString();
+                }
+                else
+                {
+                    vh.NoteText.Text = truncText;
+                }
             }
             else
             {
-                vh.NoteText.Text = AllnoteModels[position].NoteContent;
+                var truncText = AllnoteModels[position].NoteContent;
+                var Alllines = truncText.Split('\n');
+                if (Alllines.Length > 6)
+                {
+                    vh.NoteText.Text = new StringBuilder().AppendJoin('\n', Alllines[0..5]).ToString();
+                }
+                else
+                {
+                    vh.NoteText.Text = truncText;
+                }
             }
-            
+
         }
 
         // Return the number of photos available in the photo album:

@@ -6,5 +6,5 @@
         android:orderInCategory="100"
         android:icon="@drawable/deleteIcon"
         android:title="Delete"
-        app:showAsAction="never" />
+        app:showAsAction="always" />
 </menu>

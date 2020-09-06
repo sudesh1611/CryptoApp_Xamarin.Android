@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="2.1" package="com.sudesh.cryptoapp" android:installLocation="auto" android:versionCode="8">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionName="2.1" package="me.sudeshkumar.cryptoapp" android:installLocation="auto" android:versionCode="8">
 	<uses-sdk android:minSdkVersion="24" android:targetSdkVersion="29" />
 	<application android:label="@string/app_name" android:allowBackup="false" android:icon="@drawable/ic_launcher" android:supportsRtl="true" android:theme="@style/MainTheme"></application>
 	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />

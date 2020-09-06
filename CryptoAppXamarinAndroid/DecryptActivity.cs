@@ -71,7 +71,7 @@ namespace CryptoAppXamarinAndroid
             var PermissionStatus = await CheckAndRequestStoragePermission();
             if (PermissionStatus != PermissionStatus.Granted)
             {
-                ShowDialog("Permission Error", "Storage permission is required to encrypt files.");
+                ShowDialog("Permission Error", "Storage permission is required to decrypt files.");
                 return;
             }
             try
@@ -255,7 +255,7 @@ namespace CryptoAppXamarinAndroid
                 if (decryptionResult.Result)
                 {
                     RestoreAllControls(ViewStates.Invisible);
-                    ShowDialog("Success", "File decrypted. Decrypted filename is \"" + decryptionResult.DecryptedString + "\" and stored at \"" + System.IO.Path.GetDirectoryName(fileData) + "\" folder.");
+                    ShowDialog("Success", "File decrypted. Decrypted filename is \"" + decryptionResult.DecryptedString + "\" and stored at \"Crypto App"  + "\" folder.");
                     fileData = null;
                     RemoveButton_Click(null, null);
                     TextInputEditor.Text = String.Empty;
